@@ -1,15 +1,29 @@
-OCTOTHORPE=C:\Users\Administrator\Projects\octothorpe
-OCTOTHORPE_LIB=$(OCTOTHORPE)\octothorped.lib
+OCTOTHORPE=../octothorpe/
+CC=gcc
+CPPFLAGS=-D_DEBUG -I$(OCTOTHORPE)
+#CPPFLAGS=
+CFLAGS=-Wall -g $(CPPFLAGS)
+COMPILE_ONLY_CFLAGS=-c $(CFLAGS)
+SOURCES=porg_utils.c
+#TEST_SOURCES=
+OBJECTS=$(SOURCES:.c=.o)
+#TEST_OBJECTS=$(TEST_SOURCES:.c=.o)
+#TEST_EXECS=$(TEST_SOURCES:.c=.exe)
+LIBRARY=porgd.a
+OCTOTHORPE_LIBRARY=$(OCTOTHORPE)octothorped.a
 
-CL_OPTIONS=/c /D_DEBUG /Zi /I$(OCTOTHORPE)
-
-porg_utils.obj: porg_utils.c porg_utils.h
-	cl.exe porg_utils.c $(CL_OPTIONS)
-
-porgd.lib: porg_utils.obj
-	lib.exe porg_utils.obj /OUT:porgd.lib
-
-all: porgd.lib
+all: $(LIBRARY)
 
 clean:
-	del *.lib *.exe *.obj *.asm
+	rm $(OBJECTS)
+	#rm $(TEST_OBJECTS)
+	rm $(LIBRARY)
+
+$(LIBRARY): $(OBJECTS)
+	ar -mc $(LIBRARY) $(OBJECTS)
+
+-include $(OBJECTS:.o=.d)
+
+%.o: %.c
+	$(CC) $(COMPILE_ONLY_CFLAGS) $*.c -o $*.o
+	$(CC) -MM $(COMPILE_ONLY_CFLAGS) $*.c > $*.d
