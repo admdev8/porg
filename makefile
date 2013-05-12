@@ -6,8 +6,10 @@ SOURCES=porg_utils.c
 OBJECTS=$(SOURCES:.c=.o)
 DEPFILES=$(SOURCES:.c=.d)
 LIBRARY=porgd.a
+TEST_SOURCES=test1.c
+TEST_EXECS=$(TEST_SOURCES:.c=.exe)
 
-all: $(LIBRARY)($(OBJECTS))
+all: $(LIBRARY)($(OBJECTS)) $(TEST_EXECS)
 
 clean:
 	$(RM) $(OBJECTS)
@@ -18,3 +20,8 @@ clean:
 
 %.d: %.c
 	$(CC) -MM $(CFLAGS) $(CPPFLAGS) $< > $@
+
+# for tests:
+
+%.exe: %.o $(LIBRARY)
+	$(CC) $< $(LIBRARY) $(OCTOTHORPE_LIBRARY) $(PORG_LIBRARY) -lpsapi -limagehlp -o $@

@@ -3,6 +3,12 @@
 #include <errno.h>
 #include <windows.h>
 
+#include <stdio.h>
+#include <tchar.h>
+#include <string.h>
+#include <psapi.h>
+//#include <strsafe.h>
+
 #include "porg_utils.h"
 
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
@@ -23,8 +29,6 @@ void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
 #endif
     strbuf_addstr (sb, drive);
     strbuf_addstr (sb, dir);
-    //L(__FUNCTION__"() fullpath=%s\n", fullpath);
-    //L(__FUNCTION__"() out=%s\n", sb->buf);
 };
 
 void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath)
@@ -44,10 +48,7 @@ void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath)
     _splitpath (fullpath, drive, dir, fname, ext);
 #endif
     strbuf_addstr (sb, fname);
-    strbuf_addc (sb, '.');
     strbuf_addstr (sb, ext);
-    //L(__FUNCTION__"() fullpath=%s\n", fullpath);
-    //L(__FUNCTION__"() out=%s\n", sb->buf);
 };
 
 void die_GetLastError(const char *s) 
@@ -68,3 +69,101 @@ void die_GetLastError(const char *s)
     printf ("%s\n%s", s, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
 };
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
+#define BUFSIZE 512
+bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
+{
+    bool bSuccess = false;
+    char pszFilename[MAX_PATH+1];
+    HANDLE hFileMap;
+
+    // Get the file size.
+    DWORD dwFileSizeHi = 0;
+    DWORD dwFileSizeLo = GetFileSize(hFile, &dwFileSizeHi); 
+
+    if( dwFileSizeLo == 0 && dwFileSizeHi == 0 )
+    {
+        //_tprintf(TEXT("Cannot map a file with a length of zero.\n")); // but why?
+        return false;
+    }
+
+    // Create a file mapping object.
+    hFileMap = CreateFileMapping(hFile, 
+            NULL, 
+            PAGE_READONLY,
+            0, 
+            1,
+            NULL);
+
+    if (hFileMap) 
+    {
+        // Create a file mapping to get the file name.
+        void* pMem = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 1);
+
+        if (pMem) 
+        {
+            if (GetMappedFileName (GetCurrentProcess(), 
+                        pMem, 
+                        pszFilename,
+                        MAX_PATH)) 
+            {
+
+                // Translate path with device name to drive letters.
+                char szTemp[BUFSIZE];
+                szTemp[0] = '\0';
+
+                if (GetLogicalDriveStrings(BUFSIZE-1, szTemp)) 
+                {
+                    char szName[MAX_PATH];
+                    char szDrive[3] = TEXT(" :");
+                    BOOL bFound = FALSE;
+                    char* p = szTemp;
+
+                    do 
+                    {
+                        // Copy the drive letter to the template string
+                        *szDrive = *p;
+
+                        // Look up each device name
+                        if (QueryDosDevice(szDrive, szName, MAX_PATH))
+                        {
+                            size_t uNameLen = _tcslen(szName);
+
+                            if (uNameLen < MAX_PATH) 
+                            {
+                                bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0
+                                    && *(pszFilename + uNameLen) == _T('\\');
+
+                                if (bFound) 
+                                {
+                                    // Reconstruct pszFilename using szTempFile
+                                    // Replace device path with DOS path
+                                    char szTempFile[MAX_PATH];
+                                    snprintf(szTempFile,
+                                            MAX_PATH,
+                                            "%s%s",
+                                            szDrive,
+                                            pszFilename+uNameLen);
+                                    strncpy(pszFilename, szTempFile, MAX_PATH+1);
+                                }
+                            }
+                        }
+
+                        // Go to the next NULL character.
+                        while (*p++);
+                    } while (!bFound && *p); // end of string
+                }
+            }
+            bSuccess = true;
+            UnmapViewOfFile(pMem);
+        } 
+
+        CloseHandle(hFileMap);
+    }
+    strbuf_addstr (filename_out, pszFilename);
+    //_tprintf(TEXT("File name is %s\n"), pszFilename);
+    return bSuccess;
+}
+
+
