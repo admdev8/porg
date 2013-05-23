@@ -17,6 +17,7 @@ void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath);
 void die_GetLastError(const char *s);
 bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out);
 obj* FindProcessByName (const char* name);
+BOOL EnableDebugPrivilege(BOOL Enable);
 
 #ifdef  __cplusplus
 }

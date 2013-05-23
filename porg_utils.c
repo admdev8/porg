@@ -191,3 +191,36 @@ obj* FindProcessByName (const char* name)
     CloseHandle ( hSysSnapshot );
     return rt;
 };
+
+BOOL EnableDebugPrivilege(BOOL Enable) 
+{
+    HANDLE hToken = NULL;
+    BOOL b;
+
+    b=OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken);
+    if (b==FALSE)
+        die_GetLastError ("OpenProcessToken");
+
+    TOKEN_PRIVILEGES tp; 
+
+    tp.PrivilegeCount = 1;
+
+    b=LookupPrivilegeValue( NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid);
+    if (b==FALSE)
+        die_GetLastError ("LookupPrivilegeValue");
+
+    tp.Privileges[0].Attributes = Enable ? SE_PRIVILEGE_ENABLED : 0;
+
+    b=AdjustTokenPrivileges( hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
+    if (b==FALSE)
+        die_GetLastError ("AdjustTokenPrivileges");
+
+    if( hToken != NULL ) 
+    {
+        b=CloseHandle( hToken );
+        assert (b);
+    };
+
+    return TRUE;
+}
+
