@@ -7,8 +7,9 @@
 #include <tchar.h>
 #include <string.h>
 #include <psapi.h>
-//#include <strsafe.h>
+#include <tlhelp32.h>
 
+#include "stuff.h"
 #include "porg_utils.h"
 
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
@@ -166,4 +167,27 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
     return bSuccess;
 }
 
+// find all processes PIDs by name
 
+obj* FindProcessByName (const char* name)
+{
+    PROCESSENTRY32 proc;
+    proc.dwSize = sizeof(proc);
+    obj* rt=NULL;
+
+    HANDLE hSysSnapshot = CreateToolhelp32Snapshot ( TH32CS_SNAPPROCESS, 0 );
+
+    if ( hSysSnapshot == INVALID_HANDLE_VALUE )
+        die ("CreateToolhelp32Snapshot() failed\n");
+
+    if ( Process32First ( hSysSnapshot, &proc ) )
+    {
+        proc.dwSize = sizeof(proc);
+        do
+            if (_stricmp (name, proc.szExeFile)==0)
+                rt=cons (obj_tetrabyte(proc.th32ProcessID), rt);
+        while ( Process32Next ( hSysSnapshot, &proc ) );
+    }
+    CloseHandle ( hSysSnapshot );
+    return rt;
+};
