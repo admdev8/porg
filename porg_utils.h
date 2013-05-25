@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath);
-void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath);
+void full_path_and_filename_to_filename_only (strbuf *sb_filename, strbuf *sb_filename_without_ext, const char* fullpath);
 
 // $s$ shouldn't be newline-terminated
 void die_GetLastError(const char *s);

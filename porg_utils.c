@@ -32,7 +32,7 @@ void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
     strbuf_addstr (sb, dir);
 };
 
-void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath)
+void full_path_and_filename_to_filename_only (strbuf *sb_filename, strbuf *sb_filename_without_ext, const char* fullpath)
 {
     char drive[_MAX_DRIVE];
     char dir[_MAX_DIR];
@@ -48,8 +48,10 @@ void full_path_and_filename_to_filename_only (strbuf *sb, const char* fullpath)
 #else
     _splitpath (fullpath, drive, dir, fname, ext);
 #endif
-    strbuf_addstr (sb, fname);
-    strbuf_addstr (sb, ext);
+    strbuf_addstr (sb_filename, fname);
+    strbuf_addstr (sb_filename, ext);
+    
+    strbuf_addstr (sb_filename_without_ext, fname);
 };
 
 void die_GetLastError(const char *s) 
