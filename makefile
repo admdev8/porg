@@ -1,8 +1,8 @@
 OCTOTHORPE=../octothorpe/
 OCTOTHORPE_LIBRARY=$(OCTOTHORPE)octothorped.a
 CPPFLAGS=-D_DEBUG -I$(OCTOTHORPE)
-CFLAGS=-c -Wall -g
-SOURCES=porg_utils.c
+CFLAGS=-c -Wall -g -std=gnu99
+SOURCES=porg_utils.c oracle_sym.c
 OBJECTS=$(SOURCES:.c=.o)
 DEPFILES=$(SOURCES:.c=.d)
 LIBRARY=porgd.a

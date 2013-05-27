@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include "strbuf.h"
 #include "lisp.h"
+#include "strbuf.h"
 #include "mingw_addons.h"
 
 #ifdef  __cplusplus
