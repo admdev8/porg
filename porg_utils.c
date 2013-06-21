@@ -71,6 +71,7 @@ void die_GetLastError(const char *s)
 
     printf ("%s\n%s", s, (char*)lpMsgBuf);
     LocalFree(lpMsgBuf);
+    exit(0);
 };
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
