@@ -33,6 +33,7 @@ void die_GetLastError(const char *s);
 bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out);
 obj* FindProcessByName (const char* name);
 BOOL EnableDebugPrivilege(BOOL Enable);
+DWORD get_file_size (const char* fname);
 
 #ifdef  __cplusplus
 }

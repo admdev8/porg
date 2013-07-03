@@ -242,3 +242,18 @@ BOOL EnableDebugPrivilege(BOOL Enable)
     return TRUE;
 }
 
+DWORD get_file_size (const char* fname)
+{
+    DWORD fsize;
+
+    HANDLE h=CreateFile (fname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+    if (h==INVALID_HANDLE_VALUE)
+        die("%s() Cannot open file %s", __func__, fname);
+
+    fsize=GetFileSize (h, NULL);
+
+    CloseHandle (h);
+        
+    return fsize;
+};
