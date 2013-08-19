@@ -1,13 +1,22 @@
 CC=gcc
+
+ifeq ($(BUILD),debug)
+bsuffix=debug
+CPPFLAGS_ADD=-D_DEBUG
+else
+bsuffix=release
+CPPFLAGS_ADD=-O3
+endif
+
 OCTOTHORPE=../octothorpe
-OCTOTHORPE_LIBRARY=$(OCTOTHORPE)/$(MSYSTEM)_debug/octothorped.a
-CPPFLAGS=-D_DEBUG -I$(OCTOTHORPE)
+OCTOTHORPE_LIBRARY=$(OCTOTHORPE)/$(MSYSTEM)_$(bsuffix)/octothorpe.a
+CPPFLAGS=-I$(OCTOTHORPE) $(CPPFLAGS_ADD)
 CFLAGS=-c -Wall -g -std=gnu99
-SOURCES=porg_utils.c oracle_sym.c
+SOURCES=porg_utils.c oracle_sym.c mem_utils.c
 DEPFILES=$(SOURCES:.c=.d)
-OUTDIR=$(MSYSTEM)_debug
+OUTDIR=$(MSYSTEM)_$(bsuffix)
 OBJECTS=$(addprefix $(OUTDIR)/,$(SOURCES:.c=.o))
-LIBRARY=$(OUTDIR)/porgd.a
+LIBRARY=$(OUTDIR)/porg.a
 TEST_SOURCES=test1.c
 TEST_EXECS=$(addprefix $(OUTDIR)/,$(TEST_SOURCES:.c=.exe))
 

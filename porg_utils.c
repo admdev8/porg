@@ -257,3 +257,5 @@ DWORD get_file_size (const char* fname)
         
     return fsize;
 };
+
+/* vim: set expandtab ts=4 sw=4 : */

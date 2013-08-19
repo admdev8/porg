@@ -106,3 +106,5 @@ unmap_close_exit:
     CloseHandle (f);
     return rt;
 };
+
+/* vim: set expandtab ts=4 sw=4 : */

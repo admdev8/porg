@@ -30,3 +30,4 @@ int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T 
         bool check_PE_timestamp,
         callback_add_symbol add_symbol_fn, void *add_symbol_fn_params, int oracle_version);
 
+/* vim: set expandtab ts=4 sw=4 : */
