@@ -12,7 +12,7 @@ OCTOTHORPE=../octothorpe
 OCTOTHORPE_LIBRARY=$(OCTOTHORPE)/$(MSYSTEM)_$(bsuffix)/octothorpe.a
 CPPFLAGS=-I$(OCTOTHORPE) $(CPPFLAGS_ADD)
 CFLAGS=-c -Wall -g -std=gnu99
-SOURCES=porg_utils.c oracle_sym.c mem_utils.c
+SOURCES=porg_utils.c oracle_sym.c mem_utils.c HTTP.c
 DEPFILES=$(SOURCES:.c=.d)
 OUTDIR=$(MSYSTEM)_$(bsuffix)
 OBJECTS=$(addprefix $(OUTDIR)/,$(SOURCES:.c=.o))
