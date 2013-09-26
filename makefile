@@ -17,7 +17,7 @@ DEPFILES=$(SOURCES:.c=.d)
 OUTDIR=$(MSYSTEM)_$(bsuffix)
 OBJECTS=$(addprefix $(OUTDIR)/,$(SOURCES:.c=.o))
 LIBRARY=$(OUTDIR)/porg.a
-TEST_SOURCES=test1.c
+TEST_SOURCES=test1.c oracle_sym_test.c
 TEST_EXECS=$(addprefix $(OUTDIR)/,$(TEST_SOURCES:.c=.exe))
 
 all: $(OUTDIR) $(LIBRARY)($(OBJECTS)) $(TEST_EXECS)

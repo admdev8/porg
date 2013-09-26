@@ -13,7 +13,8 @@
  *
  */
 
-#include <assert.h>
+#include <stdio.h>
+#include "oassert.h"
 #include "oracle_sym.h"
 
 int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T PE_size, DWORD PE_timestamp, 
@@ -33,7 +34,7 @@ int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T 
         return ORACLE_SYM_IMPORTER_ERROR_FILE_OPENING_ERROR;
 
     DWORD len=GetFileSize (f, NULL);
-    assert (len!=INVALID_FILE_SIZE);
+    oassert (len!=INVALID_FILE_SIZE);
 
     HANDLE fm=CreateFileMapping (f, NULL, PAGE_READONLY, 0, 0, NULL);
 
@@ -64,7 +65,7 @@ int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T 
     
     REG SYM_timedatestamp;
 
-    if (oracle_version==11)
+    if (oracle_version==11 || oracle_version==12)
     {
         memcpy (&SYM_timedatestamp, (BYTE*)adr+sizeof (REG)*2, sizeof (REG));
 
@@ -86,7 +87,11 @@ int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T 
     for (REG i=0; i<cnt; i++)
     {
         char *name=d3+(*(d2+i));
-        REG a=(REG)*(d1+i);
+        address a=(REG)*(d1+i);
+
+#if 0
+        printf ("name=%s, address=0x%x\n", name, a);
+#endif
 
         // All oracle .SYM files for Oracle DLLs has addresses starting at 0x10000000
         // without any relation to DLL's image base
@@ -96,13 +101,16 @@ int get_symbols_from_ORACLE_SYM (const char *fname, address PE_img_base, SIZE_T 
             a=(a - 0x10000000) + (REG)PE_img_base;
         };
 
-        if (a >= (REG)PE_img_base && a <= ((REG)PE_img_base + PE_size))
+        if (add_symbol_fn && a >= (REG)PE_img_base && a <= ((REG)PE_img_base + PE_size))
+        {
+            oassert(add_symbol_fn_params);
             add_symbol_fn(a, name, add_symbol_fn_params);
+        };
     };
 
 unmap_close_exit:
     b=UnmapViewOfFile ((LPCVOID)adr);
-    assert (b==TRUE);
+    oassert (b==TRUE);
     CloseHandle (f);
     return rt;
 };
