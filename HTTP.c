@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <windows.h>
 #include <winhttp.h>
 
@@ -53,7 +54,7 @@ char *HTTP_get_first_block_if_possible(wchar_t *host, wchar_t *path, wchar_t *ag
 	if( !WinHttpQueryDataAvailable( hRequest, &dwSize ) )
 		return NULL;
 
-	pszOutBuffer = (char*)malloc (dwSize+1);
+	pszOutBuffer = malloc (dwSize+1);
 
 	ZeroMemory(pszOutBuffer, dwSize+1);
 
