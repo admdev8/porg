@@ -24,8 +24,10 @@
 #include <psapi.h>
 #include <tlhelp32.h>
 
-#include "stuff.h"
 #include "porg_utils.h"
+
+// from octothorpe library:
+#include "stuff.h"
 
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
 {
