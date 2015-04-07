@@ -4633,14 +4633,15 @@ fi
 
 fi
 
-unset octothorpe_include_path
+octothorpe_include_path=/usr/local/include/octothorpe
+octothorpe_lib_path=/usr/local/lib
+
 
 # Check whether --with-octothorpe_include was given.
 if test "${with_octothorpe_include+set}" = set; then :
   withval=$with_octothorpe_include; octothorpe_include_path="$withval"
 fi
 
-unset octothorpe_lib_path
 
 # Check whether --with-octothorpe_lib was given.
 if test "${with_octothorpe_lib+set}" = set; then :

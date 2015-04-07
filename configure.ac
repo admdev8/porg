@@ -30,12 +30,14 @@ if test $stricmp = no; then
 	)
 fi
 
+dnl default values:
+octothorpe_include_path=/usr/local/include/octothorpe
+octothorpe_lib_path=/usr/local/lib
+
 dnl Extra arguments to configure
-unset octothorpe_include_path
 AC_ARG_WITH(octothorpe_include,
    [  --with-octothorpe-include=DIR  octothorpe include directory ],
    [octothorpe_include_path="$withval"])
-unset octothorpe_lib_path
 AC_ARG_WITH(octothorpe_lib,
    [  --with-octothorpe-lib=DIR      octothorpe lib directory ], 
    [octothorpe_lib_path="$withval"])

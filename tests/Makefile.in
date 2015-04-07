@@ -75,7 +75,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-check_PROGRAMS = test1$(EXEEXT)
+check_PROGRAMS = test1$(EXEEXT) FindProcessByName_test$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(top_srcdir)/test-driver
@@ -87,6 +87,9 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+FindProcessByName_test_SOURCES = FindProcessByName_test.c
+FindProcessByName_test_OBJECTS = FindProcessByName_test.$(OBJEXT)
+FindProcessByName_test_DEPENDENCIES = $(top_builddir)/lib/libporg.a
 test1_SOURCES = test1.c
 test1_OBJECTS = test1.$(OBJEXT)
 test1_DEPENDENCIES = $(top_builddir)/lib/libporg.a
@@ -118,8 +121,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = test1.c
-DIST_SOURCES = test1.c
+SOURCES = FindProcessByName_test.c test1.c
+DIST_SOURCES = FindProcessByName_test.c test1.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -444,8 +447,10 @@ top_srcdir = @top_srcdir@
 TESTS = run-porg_tests.sh
 test1_SOURCE = test1
 test1_LDADD = $(top_builddir)/lib/libporg.a -lpsapi -limagehlp
+FindProcessByName_test_SOURCE = FindProcessByName_test
+FindProcessByName_test_LDADD = $(top_builddir)/lib/libporg.a -lpsapi -limagehlp
 AM_CPPFLAGS = -I$(top_srcdir)/include
-EXTRA_DIST = run-porg_tests.sh 
+EXTRA_DIST = run-porg_tests.sh test1.correct
 all: all-am
 
 .SUFFIXES:
@@ -484,6 +489,10 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
 
+FindProcessByName_test$(EXEEXT): $(FindProcessByName_test_OBJECTS) $(FindProcessByName_test_DEPENDENCIES) $(EXTRA_FindProcessByName_test_DEPENDENCIES) 
+	@rm -f FindProcessByName_test$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(FindProcessByName_test_OBJECTS) $(FindProcessByName_test_LDADD) $(LIBS)
+
 test1$(EXEEXT): $(test1_OBJECTS) $(test1_DEPENDENCIES) $(EXTRA_test1_DEPENDENCIES) 
 	@rm -f test1$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test1_OBJECTS) $(test1_LDADD) $(LIBS)
@@ -494,6 +503,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindProcessByName_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test1.Po@am__quote@
 
 .c.o:
