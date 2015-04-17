@@ -28,6 +28,7 @@
 
 // from octothorpe library:
 #include "stuff.h"
+#include "oassert.h"
 
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
 {
@@ -105,83 +106,78 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
 
 	if( dwFileSizeLo == 0 && dwFileSizeHi == 0 )
 	{
-		//_tprintf(TEXT("Cannot map a file with a length of zero.\n")); // but why?
+		printf ("%s() Cannot map a file with a length of zero.\n", __func__); // but why?
 		return false;
 	}
 
 	// Create a file mapping object.
-	hFileMap = CreateFileMapping(hFile, 
-			NULL, 
-			PAGE_READONLY,
-			0, 
-			1,
-			NULL);
+	hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 1, NULL);
 
-	if (hFileMap) 
+	if (hFileMap==NULL)
+		die_GetLastError ("GetFileNameFromHandle(): CreateFileMapping()");
+
+	// Create a file mapping to get the file name.
+	void* pMem = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 1);
+	if (pMem==NULL)
+		die_GetLastError ("GetFileNameFromHandle(): MapViewOfFile()");
+
+// FIXME: may fail with:
+// "The volume for a file has been externally altered so that the opened file is no longer valid."
+	if (GetMappedFileName (GetCurrentProcess(), pMem, pszFilename, MAX_PATH)==0)
+		die_GetLastError ("GetFileNameFromHandle(): GetMappedFileName()");
+
+	// Translate path with device name to drive letters.
+	char szTemp[BUFSIZE];
+	szTemp[0] = '\0';
+
+	if (GetLogicalDriveStrings(BUFSIZE-1, szTemp)==0)
+		die_GetLastError ("GetFileNameFromHandle(): GetLogicalDriveStrings()");
+
+	char szName[MAX_PATH];
+	char szDrive[3] = TEXT(" :");
+	BOOL bFound = FALSE;
+	char* p = szTemp;
+
+	do 
 	{
-		// Create a file mapping to get the file name.
-		void* pMem = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 1);
+		// Copy the drive letter to the template string
+		*szDrive = *p;
 
-		if (pMem) 
+		// Look up each device name
+		if (QueryDosDevice(szDrive, szName, MAX_PATH)==0)
+			die_GetLastError ("GetFileNameFromHandle(): QueryDosDevice()");
+
+		size_t uNameLen = _tcslen(szName);
+
+		oassert (uNameLen < MAX_PATH);
+
+		bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0
+			&& *(pszFilename + uNameLen) == _T('\\');
+
+		//printf ("%s() _tcsnicmp(%s,%s)\n", __func__, pszFilename, szName);
+
+		if (bFound)
 		{
-			if (GetMappedFileName (GetCurrentProcess(), 
-						pMem, 
-						pszFilename,
-						MAX_PATH)) 
-			{
+			// Reconstruct pszFilename using szTempFile
+			// Replace device path with DOS path
+			char szTempFile[MAX_PATH];
+			snprintf(szTempFile,
+				 MAX_PATH,
+				 "%s%s",
+				 szDrive,
+				 pszFilename+uNameLen);
+			strncpy(pszFilename, szTempFile, MAX_PATH+1);
+		}
 
-				// Translate path with device name to drive letters.
-				char szTemp[BUFSIZE];
-				szTemp[0] = '\0';
+		// Go to the next NULL character.
+		while (*p++);
+	} while (!bFound && *p); // end of string
 
-				if (GetLogicalDriveStrings(BUFSIZE-1, szTemp)) 
-				{
-					char szName[MAX_PATH];
-					char szDrive[3] = TEXT(" :");
-					BOOL bFound = FALSE;
-					char* p = szTemp;
+	bSuccess = true;
+	UnmapViewOfFile(pMem);
 
-					do 
-					{
-						// Copy the drive letter to the template string
-						*szDrive = *p;
+	CloseHandle(hFileMap);
 
-						// Look up each device name
-						if (QueryDosDevice(szDrive, szName, MAX_PATH))
-						{
-							size_t uNameLen = _tcslen(szName);
-
-							if (uNameLen < MAX_PATH) 
-							{
-								bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0
-									&& *(pszFilename + uNameLen) == _T('\\');
-
-								if (bFound) 
-								{
-									// Reconstruct pszFilename using szTempFile
-									// Replace device path with DOS path
-									char szTempFile[MAX_PATH];
-									snprintf(szTempFile,
-											MAX_PATH,
-											"%s%s",
-											szDrive,
-											pszFilename+uNameLen);
-									strncpy(pszFilename, szTempFile, MAX_PATH+1);
-								}
-							}
-						}
-
-						// Go to the next NULL character.
-						while (*p++);
-					} while (!bFound && *p); // end of string
-				}
-			}
-			bSuccess = true;
-			UnmapViewOfFile(pMem);
-		} 
-
-		CloseHandle(hFileMap);
-	}
 	strbuf_addstr (filename_out, pszFilename);
 	//_tprintf(TEXT("File name is %s\n"), pszFilename);
 	return bSuccess;
