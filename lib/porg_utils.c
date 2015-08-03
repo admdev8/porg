@@ -72,7 +72,7 @@ void full_path_and_filename_to_filename_only (strbuf *sb_filename, strbuf *sb_fi
 	strbuf_addstr (sb_filename_without_ext, fname);
 };
 
-void die_GetLastError(const char *s) 
+void print_GetLastError(const char *s)
 {
 	DWORD dw=GetLastError();
 	LPVOID lpMsgBuf;
@@ -89,12 +89,18 @@ void die_GetLastError(const char *s)
 
 	printf ("%s\n%s", s, (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
+};
+
+void die_GetLastError(const char *s)
+{
+	print_GetLastError(s);
 	exit(0);
 };
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366789(v=vs.85).aspx
 #define BUFSIZE 512
-bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
+// TODO report error if...
+bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_errors)
 {
 	bool bSuccess = false;
 	char pszFilename[MAX_PATH+1];
@@ -106,7 +112,8 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
 
 	if( dwFileSizeLo == 0 && dwFileSizeHi == 0 )
 	{
-		printf ("%s() Cannot map a file with a length of zero.\n", __func__); // but why?
+		if (report_errors)
+			printf ("%s() Cannot map a file with a length of zero.\n", __func__); // but why?
 		return false;
 	}
 
@@ -114,24 +121,40 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
 	hFileMap = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 1, NULL);
 
 	if (hFileMap==NULL)
-		die_GetLastError ("GetFileNameFromHandle(): CreateFileMapping()");
+	{
+		if (report_errors)
+			print_GetLastError ("GetFileNameFromHandle(): CreateFileMapping()");
+		return false;
+	};
 
 	// Create a file mapping to get the file name.
 	void* pMem = MapViewOfFile(hFileMap, FILE_MAP_READ, 0, 0, 1);
 	if (pMem==NULL)
-		die_GetLastError ("GetFileNameFromHandle(): MapViewOfFile()");
+	{
+		if (report_errors)
+			print_GetLastError ("GetFileNameFromHandle(): MapViewOfFile()");
+		return false;
+	};
 
 // FIXME: may fail with:
 // "The volume for a file has been externally altered so that the opened file is no longer valid."
 	if (GetMappedFileName (GetCurrentProcess(), pMem, pszFilename, MAX_PATH)==0)
-		die_GetLastError ("GetFileNameFromHandle(): GetMappedFileName()");
+	{
+		if (report_errors)
+			print_GetLastError ("GetFileNameFromHandle(): GetMappedFileName()");
+		return false;
+	};
 
 	// Translate path with device name to drive letters.
 	char szTemp[BUFSIZE];
 	szTemp[0] = '\0';
 
 	if (GetLogicalDriveStrings(BUFSIZE-1, szTemp)==0)
-		die_GetLastError ("GetFileNameFromHandle(): GetLogicalDriveStrings()");
+	{
+		if (report_errors)
+			print_GetLastError ("GetFileNameFromHandle(): GetLogicalDriveStrings()");
+		return false;
+	};
 
 	char szName[MAX_PATH];
 	char szDrive[3] = TEXT(" :");
@@ -145,7 +168,11 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out)
 
 		// Look up each device name
 		if (QueryDosDevice(szDrive, szName, MAX_PATH)==0)
-			die_GetLastError ("GetFileNameFromHandle(): QueryDosDevice()");
+		{
+			if (report_errors)
+				print_GetLastError ("GetFileNameFromHandle(): QueryDosDevice()");
+			return false;
+		};
 
 		size_t uNameLen = _tcslen(szName);
 

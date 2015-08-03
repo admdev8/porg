@@ -29,8 +29,10 @@ extern "C" {
 	void full_path_and_filename_to_filename_only (strbuf *sb_filename, strbuf *sb_filename_without_ext, const char* fullpath);
 
 	// $s$ shouldn't be newline-terminated
+	void print_GetLastError(const char *s);
 	void die_GetLastError(const char *s);
-	bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out);
+
+	bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_errors);
 	obj* FindProcessByName (const char* name);
 	BOOL EnableDebugPrivilege(BOOL Enable);
 	DWORD get_file_size (const char* fname);
