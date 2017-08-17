@@ -30,6 +30,26 @@
 #include "stuff.h"
 #include "oassert.h"
 
+#ifndef _MAX_PATH
+#define _MAX_PATH 260
+#endif
+
+#ifndef _MAX_DRIVE
+#define _MAX_DRIVE 3
+#endif
+
+#ifndef _MAX_DIR
+#define _MAX_DIR 256
+#endif
+
+#ifndef _MAX_FNAME
+#define _MAX_FNAME 256
+#endif
+
+#ifndef _MAX_EXT
+#define _MAX_EXT 256
+#endif
+
 void full_path_and_filename_to_path_only (strbuf *sb, const char* fullpath)
 {
 	char drive[_MAX_DRIVE];
@@ -174,12 +194,13 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 			return false;
 		};
 
-		size_t uNameLen = _tcslen(szName);
+		//size_t uNameLen = _tcslen(szName);
+		size_t uNameLen = strlen(szName);
 
 		oassert (uNameLen < MAX_PATH);
 
-		bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0
-			&& *(pszFilename + uNameLen) == _T('\\');
+		//bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0 && *(pszFilename + uNameLen) == _T('\\');
+		bFound = _strnicmp(pszFilename, szName, uNameLen) == 0 && *(pszFilename + uNameLen) == _T('\\');
 
 		//printf ("%s() _tcsnicmp(%s,%s)\n", __func__, pszFilename, szName);
 
@@ -228,7 +249,7 @@ obj* FindProcessByName (const char* name)
 		proc.dwSize = sizeof(proc);
 		do
 			if (_stricmp (name, proc.szExeFile)==0)
-				rt=cons (obj_tetrabyte(proc.th32ProcessID), rt);
+				rt=cons (obj_tetra(proc.th32ProcessID), rt);
 		while ( Process32Next ( hSysSnapshot, &proc ) );
 	}
 	CloseHandle ( hSysSnapshot );
