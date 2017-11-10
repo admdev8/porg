@@ -1,2 +1,0 @@
-SUBDIRS = lib tests include
-EXTRA_DIST = LICENSE README

@@ -19,7 +19,7 @@
 
 #include "lisp.h"
 #include "strbuf.h"
-#include "mingw_addons.h"
+//#include "mingw_addons.h"
 
 #ifdef  __cplusplus
 extern "C" {

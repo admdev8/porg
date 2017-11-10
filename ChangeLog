@@ -1,3 +1,7 @@
+2017-10-09  Dennis Yurichev <dennis@yurichev.com>
+
+	* No more autotools
+
 2015-04-04  Dennis Yurichev <dennis@yurichev.com>
 
 	* Switching to GNU autotools
