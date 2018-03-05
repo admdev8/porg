@@ -143,7 +143,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 	if (hFileMap==NULL)
 	{
 		if (report_errors)
-			print_GetLastError ("GetFileNameFromHandle(): CreateFileMapping()");
+			print_GetLastError ("Error: "__FUNCTION__"(): CreateFileMapping()");
 		return false;
 	};
 
@@ -152,7 +152,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 	if (pMem==NULL)
 	{
 		if (report_errors)
-			print_GetLastError ("GetFileNameFromHandle(): MapViewOfFile()");
+			print_GetLastError ("Error: "__FUNCTION__"(): MapViewOfFile()");
 		return false;
 	};
 
@@ -161,7 +161,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 	if (GetMappedFileName (GetCurrentProcess(), pMem, pszFilename, MAX_PATH)==0)
 	{
 		if (report_errors)
-			print_GetLastError ("GetFileNameFromHandle(): GetMappedFileName()");
+			print_GetLastError ("Error: "__FUNCTION__"(): GetMappedFileName()");
 		return false;
 	};
 
@@ -172,7 +172,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 	if (GetLogicalDriveStrings(BUFSIZE-1, szTemp)==0)
 	{
 		if (report_errors)
-			print_GetLastError ("GetFileNameFromHandle(): GetLogicalDriveStrings()");
+			print_GetLastError ("Error: "__FUNCTION__"(): GetLogicalDriveStrings()");
 		return false;
 	};
 
@@ -190,7 +190,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 		if (QueryDosDevice(szDrive, szName, MAX_PATH)==0)
 		{
 			if (report_errors)
-				print_GetLastError ("GetFileNameFromHandle(): QueryDosDevice()");
+				print_GetLastError ("Error: "__FUNCTION__"(): QueryDosDevice()");
 			return false;
 		};
 
@@ -198,7 +198,7 @@ bool GetFileNameFromHandle(HANDLE hFile, strbuf *filename_out, bool report_error
 		size_t uNameLen = strlen(szName);
 
 		oassert (uNameLen < MAX_PATH);
-
+		
 		//bFound = _tcsnicmp(pszFilename, szName, uNameLen) == 0 && *(pszFilename + uNameLen) == _T('\\');
 		bFound = _strnicmp(pszFilename, szName, uNameLen) == 0 && *(pszFilename + uNameLen) == _T('\\');
 

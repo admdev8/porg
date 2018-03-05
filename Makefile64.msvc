@@ -1,10 +1,10 @@
-OPTIONS=/D__WORDSIZE=32 /D_DEBUG /DRE_USE_MALLOC /I../octothorpe
+OPTIONS=/D__WORDSIZE=64 /D_DEBUG /DRE_USE_MALLOC /I../octothorpe
 OBJECTS=HTTP.obj oracle_sym.obj porg_mem_utils.obj porg_utils.obj
 
-all: porg.lib tests
+all: porg64.lib tests
 
-porg.lib: $(OBJECTS)
-	lib.exe $(OBJECTS) /OUT:porg.lib
+porg64.lib: $(OBJECTS)
+	lib.exe $(OBJECTS) /OUT:porg64.lib
 
 HTTP.obj: HTTP.c HTTP.h
 	cl HTTP.c /c $(OPTIONS)
@@ -19,13 +19,13 @@ porg_utils.obj: porg_utils.c porg_utils.h
 	cl porg_utils.c /c $(OPTIONS)
 
 tests: test1.c FindProcessByName_test.c
-	cl test1.c $(OPTIONS) porg.lib ../octothorpe/octothorpe.lib advapi32.lib
-	cl FindProcessByName_test.c $(OPTIONS) porg.lib ../octothorpe/octothorpe.lib advapi32.lib
+	cl test1.c $(OPTIONS) porg64.lib ../octothorpe/octothorpe64.lib advapi32.lib
+	cl FindProcessByName_test.c $(OPTIONS) porg64.lib ../octothorpe/octothorpe64.lib advapi32.lib
 
 clean:
 	del test1.exe
 	del *.o
 	del *.obj
-	del porg.lib
+	del porg64.lib
 	del tests
 
